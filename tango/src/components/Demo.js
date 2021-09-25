@@ -110,9 +110,7 @@ export default function Demo() {
   };
 
   const uploadCoachVideo = async () => {
-    // event.preventDefault();
     setLoading(true);
-    // upload the video here
 
     if (confirmedSelectedThumbnail !== "") {
       const formData = new FormData();
