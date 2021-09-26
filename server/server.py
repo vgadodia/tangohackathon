@@ -358,14 +358,14 @@ async def get_leaderboard(request: Request):
 
         r = 1
         for j in final:
-            final1.append([r] + j)
+            final1.append([r] + list(j))
             r += 1
 
         final = final1.copy()
         rank = 0
 
         for i in final:
-            if i[2] < score:
+            if i[3] < score:
                 break
             else:
                 rank += 1
