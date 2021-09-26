@@ -689,6 +689,14 @@ export default function Demo() {
           </AreaChart>
         </Box>
       </Box>
+      <Button
+        mt={6}
+        colorScheme="teal"
+        size="sm"
+        onClick={() => window.location.reload()}
+      >
+        Restart
+      </Button>
     </>
   );
 
@@ -727,7 +735,7 @@ export default function Demo() {
             ))}
           </Steps>
           {activeStep === 2 ? (
-            <ResetPrompt onReset={reset} />
+            ""
           ) : (
             <>
               <StepButtons
