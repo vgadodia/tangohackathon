@@ -1054,6 +1054,7 @@ export default function Demo() {
                             </LineChart>
                         </Box>
                     </Box>
+                    {/* Leaderboard */}
                     {confirmedSelectedThumbnail && (
                         <Box textAlign='center'>
                             <Heading
