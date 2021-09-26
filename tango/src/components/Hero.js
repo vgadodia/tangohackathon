@@ -162,7 +162,7 @@ export default function Hero() {
             >
               <iframe
                 title="naruto"
-                src={`https://www.youtube.com/embed/m2Ux2PnJe6E?autoplay=${
+                src={`https://www.youtube.com/embed/8-6WGpPql-4?autoplay=${
                   videoAutoplay ? "1&rel=0" : "0"
                 }`}
                 allowFullScreen
