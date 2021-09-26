@@ -382,7 +382,181 @@ export default function Demo() {
     </>
   );
 
-  const content2 = <Flex py={4} height="70vh" width="full"></Flex>;
+  const content2 = (
+    <>
+      <Flex py={4} height="70vh" width="full">
+        <Box
+          direction="row"
+          display="flex"
+          width="100%"
+          justifyContent="center"
+        >
+          <Box
+            width="full"
+            height="full"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            textAlign="center"
+          >
+            <Box
+              width="auto"
+              height="100%"
+              maxHeight="100%"
+              maxWidth="50%"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              textAlign="center"
+            >
+              <MediaPipe
+                gridRef={gridRef}
+                setLoaded={setMediaPipeLoaded}
+                webcamRef={recordWebcam.webcamRef}
+                expectedAnnotations={coachAnnotations}
+                expectedDuration={coachVideoLength}
+                setAccuracy={setAccuracy}
+              />
+            </Box>
+            <Center width="100%" mt="-10">
+              {!showTimer && (
+                <Button
+                  leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
+                  disabled={buttonColor === "red" || !mediaPipeLoaded}
+                  colorScheme={buttonColor}
+                  variant="solid"
+                  size="lg"
+                  onClick={startRecording}
+                  isLoading={loading || !mediaPipeLoaded}
+                  loadingText={!mediaPipeLoaded ? "Loading" : "Processing"}
+                  // spinner={<BeatLoader size={8} color="white" />}
+                >
+                  {buttonText}
+                </Button>
+              )}
+              {showTimer && (
+                <Text
+                  className="timer-wrapper"
+                  style={{ fontFamily: "Roboto" }}
+                >
+                  <CountdownCircleTimer
+                    style={{ fontFamily: "Roboto" }}
+                    isPlaying
+                    duration={Math.round(coachVideoLength)}
+                    colors={[["#004777", 0.33], ["#FF0080", 0.33], ["#7928CA"]]}
+                    onComplete={() => [true, 1000]}
+                  >
+                    {renderTime}
+                  </CountdownCircleTimer>
+                </Text>
+              )}
+            </Center>
+            {/* {showTimer && (
+          <Center>
+            <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
+              Current Accuracy:
+            </Heading>
+            <Heading fontSize={"2xl"} fontFamily={"body"} color="green">
+              {(Math.round(10 * accuracy) / 10).toFixed(1)}%
+            </Heading>
+          </Center>
+        )} */}
+          </Box>
+
+          <Flex ml="20" display="flex" direction="column" alignItems="center">
+            <Center width="100%">
+              <Text color={"gray.500"} mt="2" mb="3" textAlign="center">
+                Record yourself practicing the dance! Tango will provide you
+                with live feedback based on the video you uploaded earlier.
+              </Text>
+              {/* {curLandmarks.map((val, i) => <p key={i}>{val['x']} {val['y']} {val['z']} {val['visibility']}</p>)} */}
+            </Center>
+            {(coachVideoFile || coachFileId) && (
+              <video
+                style={{
+                  transform: "rotateY(180deg)",
+                  "-webkit-transform": "rotateY(180deg)",
+                  "-moz-transform": "rotateY(180deg)",
+                }}
+                id="coachFilePlaying"
+                src={
+                  confirmedSelectedThumbnail !== ""
+                    ? `http://127.0.0.1:8000/getexisting?fileid=${confirmedSelectedThumbnail}`
+                    : `http://127.0.0.1:8000/getvideo?fileid=${coachFileId}`
+                }
+                // controls
+              />
+            )}
+            {/* <Center width="100%" mb={3}>
+        {!showTimer && (
+          <Button
+            leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
+            disabled={buttonColor === "red"}
+            colorScheme={buttonColor}
+            variant="solid"
+            size="lg"
+            onClick={startRecording}
+            mt="3"
+            mb="3"
+            isLoading={loading || !mediaPipeLoaded}
+            loadingText={!mediaPipeLoaded ? "Loading" : "Processing"}
+            // spinner={<BeatLoader size={8} color="white" />}
+          >
+            {buttonText}
+          </Button>
+        )}
+        {showTimer && (
+          <Text className="timer-wrapper" style={{ fontFamily: "Roboto" }}>
+            <CountdownCircleTimer
+              style={{ fontFamily: "Roboto" }}
+              isPlaying
+              duration={Math.round(coachVideoLength)}
+              colors={[["#004777", 0.33], ["#FF0080", 0.33], ["#7928CA"]]}
+              onComplete={() => [true, 1000]}
+            >
+              {renderTime}
+            </CountdownCircleTimer>
+          </Text>
+        )}
+      </Center> */}
+
+            <Box width="100%" height="100%">
+              <LandmarkGrid gridRef={gridRef} />
+            </Box>
+          </Flex>
+        </Box>
+      </Flex>
+      <Modal size={"xl"} isOpen={usernameModal}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Enter Username</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Input
+              placeholder="Username"
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              mr="5"
+              colorScheme="blue"
+              disabled={username === ""}
+              onClick={() => {
+                setUsernameModal(false);
+                uploadRecording();
+              }}
+            >
+              Confirm
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 
   const lineChartData = [
     { name: "Page A", uv: 400, pv: 2400, amt: 2400 },
