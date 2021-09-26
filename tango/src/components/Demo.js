@@ -4,45 +4,45 @@ import { useRecordWebcam } from "react-record-webcam";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 
 import {
-  Box,
-  Text,
-  Button,
-  Center,
-  VStack,
-  Flex,
-  BeatLoader,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-  useColorModeValue,
-  Image,
-  Tooltip,
-  Heading,
-  SimpleGrid,
+    Box,
+    Text,
+    Button,
+    Center,
+    VStack,
+    Flex,
+    BeatLoader,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    useDisclosure,
+    useColorModeValue,
+    Image,
+    Tooltip,
+    Heading,
+    SimpleGrid,
 } from "@chakra-ui/react";
 
 import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  AreaChart,
-  Area,
-  Tooltip as chartTooltip,
-  ReferenceDot,
+    LineChart,
+    Line,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    AreaChart,
+    Area,
+    Tooltip as chartTooltip,
+    ReferenceDot,
 } from "recharts";
 
 import {
-  AiOutlineCloudUpload,
-  AiFillFileAdd,
-  AiOutlineCheck,
-  AiOutlineCheckCircle,
+    AiOutlineCloudUpload,
+    AiFillFileAdd,
+    AiOutlineCheck,
+    AiOutlineCheckCircle,
 } from "react-icons/ai";
 import { MdPhotoLibrary } from "react-icons/md";
 import { FaVideo } from "react-icons/fa";
@@ -58,401 +58,413 @@ import { FiShoppingCart } from "react-icons/fi";
 import "./styles.css";
 
 const renderTime = ({ remainingTime }) => {
-  // if (remainingTime === 0) {
-  //   return <div className="timer">Too lale...</div>;
-  // }
+    // if (remainingTime === 0) {
+    //   return <div className="timer">Too lale...</div>;
+    // }
 
-  return (
-    <div className="timer">
-      <div className="text">Remaining</div>
-      <div className="value">{remainingTime}</div>
-      <div className="text">seconds</div>
-    </div>
-  );
+    return (
+        <div className='timer'>
+            <div className='text'>Remaining</div>
+            <div className='value'>{remainingTime}</div>
+            <div className='text'>seconds</div>
+        </div>
+    );
 };
 
 export default function Demo() {
-  const { nextStep, prevStep, reset, activeStep } = useSteps({
-    initialStep: 0,
-  });
+    const { nextStep, prevStep, reset, activeStep } = useSteps({
+        initialStep: 0,
+    });
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [loading, setLoading] = useState(false);
-  const [showTimer, setShowTimer] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [showTimer, setShowTimer] = useState(false);
 
-  const [buttonText, setButtonText] = useState("Start Recording");
-  const [buttonColor, setButtonColor] = useState("teal");
-  const [selectedThumbnail, setSelectedThumbnail] = useState("");
-  const [confirmedSelectedThumbnail, setConfirmedSelectedThumbnail] =
-    useState("");
-  const [coachPlaying, setCoachPlaying] = useState(false);
+    const [buttonText, setButtonText] = useState("Start Recording");
+    const [buttonColor, setButtonColor] = useState("teal");
+    const [selectedThumbnail, setSelectedThumbnail] = useState("");
+    const [confirmedSelectedThumbnail, setConfirmedSelectedThumbnail] =
+        useState("");
+    const [coachPlaying, setCoachPlaying] = useState(false);
 
-  const coachVideoFileRef = useRef(null);
-  const [coachVideoFile, setCoachVideoFile] = useState(null);
-  const coachVideoRef = useRef(null);
-  const [coachVideoLength, setCoachVideoLength] = useState(0);
+    const coachVideoFileRef = useRef(null);
+    const [coachVideoFile, setCoachVideoFile] = useState(null);
+    const coachVideoRef = useRef(null);
+    const [coachVideoLength, setCoachVideoLength] = useState(0);
 
-  const [coachFileId, setCoachFileId] = useState("");
+    const [coachFileId, setCoachFileId] = useState("");
 
-  const [coachAnnotations, setCoachAnnotations] = useState([]);
-  const [finalResults, setFinalResults] = useState({});
+    const [coachAnnotations, setCoachAnnotations] = useState([]);
+    const [finalResults, setFinalResults] = useState({});
 
-  const finalVideoRef = useRef(null);
+    const finalVideoRef = useRef(null);
 
-  const handleUploadClick = () => {
-    coachVideoFileRef.current.click();
-  };
+    const handleUploadClick = () => {
+        coachVideoFileRef.current.click();
+    };
 
-  const handleChangeVideo = (event) => {
-    setCoachVideoFile(event.target.files[0]);
-    // console.log(coachVideoRef.current);
-  };
+    const handleChangeVideo = (event) => {
+        setCoachVideoFile(event.target.files[0]);
+        // console.log(coachVideoRef.current);
+    };
 
-  const uploadCoachVideo = async () => {
-    setLoading(true);
+    const uploadCoachVideo = async () => {
+        setLoading(true);
 
-    if (confirmedSelectedThumbnail !== "") {
-      const formData = new FormData();
-      setCoachVideoLength(coachVideoRef.current.duration);
+        if (confirmedSelectedThumbnail !== "") {
+            const formData = new FormData();
+            setCoachVideoLength(coachVideoRef.current.duration);
 
-      formData.append("file", confirmedSelectedThumbnail);
+            formData.append("file", confirmedSelectedThumbnail);
 
-      const response = await fetch("http://127.0.0.1:8000/coachvideo1", {
-        method: "POST",
-        body: formData,
-      });
+            const response = await fetch("http://127.0.0.1:8000/coachvideo1", {
+                method: "POST",
+                body: formData,
+            });
 
-      const data = JSON.parse(await response.text());
+            const data = JSON.parse(await response.text());
 
-      console.log(data);
-      setCoachFileId(data.fileid);
+            console.log(data);
+            setCoachFileId(data.fileid);
 
-      setCoachAnnotations(data["data"]);
-    } else {
-      const formData = new FormData();
-      setCoachVideoLength(coachVideoRef.current.duration);
+            setCoachAnnotations(data["data"]);
+        } else {
+            const formData = new FormData();
+            setCoachVideoLength(coachVideoRef.current.duration);
 
-      formData.append("file", coachVideoFile);
+            formData.append("file", coachVideoFile);
 
-      const response = await fetch("http://127.0.0.1:8000/coachvideo", {
-        method: "POST",
-        body: formData,
-      });
+            const response = await fetch("http://127.0.0.1:8000/coachvideo", {
+                method: "POST",
+                body: formData,
+            });
 
-      const data = JSON.parse(await response.text());
+            const data = JSON.parse(await response.text());
 
-      console.log(data);
-      setCoachFileId(data.fileid);
+            console.log(data);
+            setCoachFileId(data.fileid);
 
-      setCoachAnnotations(data["data"]);
-    }
+            setCoachAnnotations(data["data"]);
+        }
 
-    stepCompleted[activeStep] = true;
-    setLoading(false);
-    nextStep();
-  };
+        stepCompleted[activeStep] = true;
+        setLoading(false);
+        nextStep();
+    };
 
-  const confirmThumbnail = () => {
-    setConfirmedSelectedThumbnail(selectedThumbnail);
-    onClose();
-  };
+    const confirmThumbnail = () => {
+        setConfirmedSelectedThumbnail(selectedThumbnail);
+        onClose();
+    };
 
-  const recordWebcam = useRecordWebcam();
+    const recordWebcam = useRecordWebcam();
 
-  const uploadRecording = async () => {
-    setButtonText("Uploading...");
-    setLoading(true);
-    setShowTimer(false);
-    setCoachPlaying(false);
-    document.getElementById("coachFilePlaying").pause();
+    const uploadRecording = async () => {
+        setButtonText("Uploading...");
+        setLoading(true);
+        setShowTimer(false);
+        setCoachPlaying(false);
+        document.getElementById("coachFilePlaying").pause();
 
-    const blob = await recordWebcam.getRecording();
+        const blob = await recordWebcam.getRecording();
 
-    // upload here
+        // upload here
 
-    if (confirmedSelectedThumbnail !== "") {
-      const formData = new FormData();
+        if (confirmedSelectedThumbnail !== "") {
+            const formData = new FormData();
 
-      formData.append("file1", confirmedSelectedThumbnail);
-      formData.append("file2", blob);
+            formData.append("file1", confirmedSelectedThumbnail);
+            formData.append("file2", blob);
 
-      console.log(formData);
+            console.log(formData);
 
-      const response = await fetch("http://127.0.0.1:8000/uploadfile1", {
-        method: "POST",
-        body: formData,
-      });
+            const response = await fetch("http://127.0.0.1:8000/uploadfile1", {
+                method: "POST",
+                body: formData,
+            });
 
-      const data = JSON.parse(await response.text());
+            const data = JSON.parse(await response.text());
 
-      console.log("uploadfile:", data);
-      setFinalResults(data);
-    } else {
-      const formData = new FormData();
+            console.log("uploadfile:", data);
+            setFinalResults(data);
+        } else {
+            const formData = new FormData();
 
-      formData.append("file1", coachVideoFile);
-      formData.append("file2", blob);
+            formData.append("file1", coachVideoFile);
+            formData.append("file2", blob);
 
-      console.log(formData);
+            console.log(formData);
 
-      const response = await fetch("http://127.0.0.1:8000/uploadfile", {
-        method: "POST",
-        body: formData,
-      });
+            const response = await fetch("http://127.0.0.1:8000/uploadfile", {
+                method: "POST",
+                body: formData,
+            });
 
-      const data = JSON.parse(await response.text());
+            const data = JSON.parse(await response.text());
 
-      console.log("uploadfile:", data);
-      setFinalResults(data);
-    }
+            console.log("uploadfile:", data);
+            setFinalResults(data);
+        }
 
-    setLoading(false);
-    // move to next step
-    nextStep();
-  };
+        setLoading(false);
+        // move to next step
+        nextStep();
+    };
 
-  useEffect(() => {
-    recordWebcam.open();
-    localStorage.clear();
-  }, []);
+    useEffect(() => {
+        recordWebcam.open();
+        localStorage.clear();
+    }, []);
 
-  const startRecording = () => {
-    setButtonColor("red");
-    setButtonText("3...");
-    setTimeout(() => {
-      setButtonText("2...");
-    }, 1000);
-    setTimeout(() => {
-      setButtonText("1...");
-    }, 2000);
-    setTimeout(() => {
-      setButtonText("Recording");
-      setLoading(true);
-      setShowTimer(true);
-      localStorage.setItem("record-start", Date.now());
-      setCoachPlaying(true);
-      document.getElementById("coachFilePlaying").play();
-
-      recordWebcam.start().then(() => {
+    const startRecording = () => {
+        setButtonColor("red");
+        setButtonText("3...");
         setTimeout(() => {
-          recordWebcam.stop().then(() => {
-            uploadRecording();
-          });
-        }, 1000 * coachVideoLength);
-      });
-    }, 3000);
-  };
+            setButtonText("2...");
+        }, 1000);
+        setTimeout(() => {
+            setButtonText("1...");
+        }, 2000);
+        setTimeout(() => {
+            setButtonText("Recording");
+            setLoading(true);
+            setShowTimer(true);
+            localStorage.setItem("record-start", Date.now());
+            setCoachPlaying(true);
+            document.getElementById("coachFilePlaying").play();
 
-  const handleClickThumbnail = (fileName) => {
-    console.log(fileName);
-    setSelectedThumbnail(fileName);
-  };
+            recordWebcam.start().then(() => {
+                setTimeout(() => {
+                    recordWebcam.stop().then(() => {
+                        uploadRecording();
+                    });
+                }, 1000 * coachVideoLength);
+            });
+        }, 3000);
+    };
 
-  const libraryData = [
-    {
-      imageURL: "/images/thumbnail1.jpeg",
-      name: "Hot Shower",
-      fileName: "chance_hot_shower.mp4",
-    },
-    {
-      imageURL: "/images/thumbnail2.jpeg",
-      name: "Finesse Walk",
-      fileName: "finesse_step.mp4",
-    },
-    {
-      imageURL: "/images/thumbnail3.jpeg",
-      name: "Renegade",
-      fileName: "renegade.mp4",
-    },
-    // {
-    //   imageURL: "/images/thumbnail4.jpeg",
-    //   name: "Twitter Dance",
-    // },
-  ];
+    const handleClickThumbnail = (fileName) => {
+        console.log(fileName);
+        setSelectedThumbnail(fileName);
+    };
 
-  const uploaddancevideo = (
-    <>
-      <Flex py={4}>
-        <Center flexShrink="1">
-          {(coachVideoFile || confirmedSelectedThumbnail !== "") && (
-            <video
-              ref={coachVideoRef}
-              src={
-                confirmedSelectedThumbnail !== ""
-                  ? `http://127.0.0.1:8000/getexisting?fileid=${confirmedSelectedThumbnail}`
-                  : URL.createObjectURL(coachVideoFile)
-              }
-              controls
-            />
-          )}
-        </Center>
-        <Box
-          width="full"
-          height="70vh"
-          // maxHeight="100%"
-          direction="row"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          textAlign="center"
-        >
-          <Box direction="column" width="70%">
-            {(coachVideoFile || confirmedSelectedThumbnail !== "") && (
-              <>
-                <Button
-                  leftIcon={<AiOutlineCloudUpload />}
-                  colorScheme="blue"
-                  variant="solid"
-                  size="lg"
-                  onClick={uploadCoachVideo}
-                  isLoading={loading}
-                  mb="3"
-                  w="80%"
-                >
-                  Confirm Video
-                </Button>
-                <br />
-              </>
-            )}
-            <Button
-              leftIcon={<AiFillFileAdd />}
-              colorScheme="teal"
-              variant="solid"
-              size="lg"
-              onClick={handleUploadClick}
-              disabled={loading}
-              w={
-                coachVideoFile || confirmedSelectedThumbnail !== "" ? "80%" : ""
-              }
-            >
-              Select{" "}
-              {coachVideoFile || confirmedSelectedThumbnail !== ""
-                ? "Different"
-                : "a"}{" "}
-              Video
-            </Button>
-            {!(coachVideoFile || confirmedSelectedThumbnail !== "") && (
-              <Button
-                leftIcon={<MdPhotoLibrary />}
-                colorScheme="purple"
-                variant="solid"
-                size="lg"
-                onClick={onOpen}
-                disabled={loading}
-                w={
-                  coachVideoFile || confirmedSelectedThumbnail !== ""
-                    ? "80%"
-                    : ""
-                }
-                ml="5"
-              >
-                Select Video from our Library
-              </Button>
-            )}
+    const libraryData = [
+        {
+            imageURL: "/images/thumbnail1.jpeg",
+            name: "Hot Shower",
+            fileName: "chance_hot_shower.mp4",
+        },
+        {
+            imageURL: "/images/thumbnail2.jpeg",
+            name: "Finesse Walk",
+            fileName: "finesse_step.mp4",
+        },
+        {
+            imageURL: "/images/thumbnail3.jpeg",
+            name: "Renegade",
+            fileName: "renegade.mp4",
+        },
+        // {
+        //   imageURL: "/images/thumbnail4.jpeg",
+        //   name: "Twitter Dance",
+        // },
+    ];
 
-            {coachVideoFile && (
-              <Text color={"gray.700"} mt="2">
-                Currently Selected: {coachVideoFile["name"]}
-              </Text>
-            )}
-            {confirmedSelectedThumbnail !== "" && (
-              <Text color={"gray.700"} mt="2">
-                Currently Selected: {confirmedSelectedThumbnail}
-              </Text>
-            )}
-            <input
-              type="file"
-              id="coach-video"
-              ref={coachVideoFileRef}
-              style={{ display: "none" }}
-              onChange={handleChangeVideo}
-            />
-            {/* <p>{coachVideoFile}</p> */}
+    const uploaddancevideo = (
+        <>
+            <Flex py={4}>
+                <Center flexShrink='1'>
+                    {(coachVideoFile || confirmedSelectedThumbnail !== "") && (
+                        <video
+                            ref={coachVideoRef}
+                            src={
+                                confirmedSelectedThumbnail !== ""
+                                    ? `http://127.0.0.1:8000/getexisting?fileid=${confirmedSelectedThumbnail}`
+                                    : URL.createObjectURL(coachVideoFile)
+                            }
+                            controls
+                        />
+                    )}
+                </Center>
+                <Box
+                    width='full'
+                    height='70vh'
+                    // maxHeight="100%"
+                    direction='row'
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    textAlign='center'>
+                    <Box direction='column' width='70%'>
+                        {(coachVideoFile ||
+                            confirmedSelectedThumbnail !== "") && (
+                            <>
+                                <Button
+                                    leftIcon={<AiOutlineCloudUpload />}
+                                    colorScheme='blue'
+                                    variant='solid'
+                                    size='lg'
+                                    onClick={uploadCoachVideo}
+                                    isLoading={loading}
+                                    mb='3'
+                                    w='80%'>
+                                    Confirm Video
+                                </Button>
+                                <br />
+                            </>
+                        )}
+                        <Button
+                            leftIcon={<AiFillFileAdd />}
+                            colorScheme='teal'
+                            variant='solid'
+                            size='lg'
+                            onClick={handleUploadClick}
+                            disabled={loading}
+                            w={
+                                coachVideoFile ||
+                                confirmedSelectedThumbnail !== ""
+                                    ? "80%"
+                                    : ""
+                            }>
+                            Select{" "}
+                            {coachVideoFile || confirmedSelectedThumbnail !== ""
+                                ? "Different"
+                                : "a"}{" "}
+                            Video
+                        </Button>
+                        {!(
+                            coachVideoFile || confirmedSelectedThumbnail !== ""
+                        ) && (
+                            <Button
+                                leftIcon={<MdPhotoLibrary />}
+                                colorScheme='purple'
+                                variant='solid'
+                                size='lg'
+                                onClick={onOpen}
+                                disabled={loading}
+                                w={
+                                    coachVideoFile ||
+                                    confirmedSelectedThumbnail !== ""
+                                        ? "80%"
+                                        : ""
+                                }
+                                ml='5'>
+                                Select Video from our Library
+                            </Button>
+                        )}
 
-            <Text color={"gray.500"} mt="5">
-              Upload a video of the dance that you are trying to learn. For
-              example, this could be a video of your teacher, or simply any
-              dance video online. Please make sure you only upload the clip you
-              are trying to practice.
-            </Text>
-          </Box>
-        </Box>
-      </Flex>
-    </>
-  );
+                        {coachVideoFile && (
+                            <Text color={"gray.700"} mt='2'>
+                                Currently Selected: {coachVideoFile["name"]}
+                            </Text>
+                        )}
+                        {confirmedSelectedThumbnail !== "" && (
+                            <Text color={"gray.700"} mt='2'>
+                                Currently Selected: {confirmedSelectedThumbnail}
+                            </Text>
+                        )}
+                        <input
+                            type='file'
+                            id='coach-video'
+                            ref={coachVideoFileRef}
+                            style={{ display: "none" }}
+                            onChange={handleChangeVideo}
+                        />
+                        {/* <p>{coachVideoFile}</p> */}
 
-  const content2 = (
-    <>
-      <Flex py={4} height="70vh" width="full">
-        <Box
-          direction="row"
-          display="flex"
-          width="100%"
-          justifyContent="center"
-        >
-          <Box
-            width="full"
-            height="full"
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            textAlign="center"
-          >
-            <Box
-              width="auto"
-              height="100%"
-              maxHeight="100%"
-              maxWidth="50%"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              textAlign="center"
-            >
-              <MediaPipe
-                gridRef={gridRef}
-                setLoaded={setMediaPipeLoaded}
-                webcamRef={recordWebcam.webcamRef}
-                expectedAnnotations={coachAnnotations}
-                expectedDuration={coachVideoLength}
-                setAccuracy={setAccuracy}
-              />
-            </Box>
-            <Center width="100%" mt="-10">
-              {!showTimer && (
-                <Button
-                  leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
-                  disabled={buttonColor === "red" || !mediaPipeLoaded}
-                  colorScheme={buttonColor}
-                  variant="solid"
-                  size="lg"
-                  onClick={startRecording}
-                  isLoading={loading || !mediaPipeLoaded}
-                  loadingText={!mediaPipeLoaded ? "Loading" : "Processing"}
-                  // spinner={<BeatLoader size={8} color="white" />}
-                >
-                  {buttonText}
-                </Button>
-              )}
-              {showTimer && (
-                <Text
-                  className="timer-wrapper"
-                  style={{ fontFamily: "Roboto" }}
-                >
-                  <CountdownCircleTimer
-                    style={{ fontFamily: "Roboto" }}
-                    isPlaying
-                    duration={Math.round(coachVideoLength)}
-                    colors={[["#004777", 0.33], ["#FF0080", 0.33], ["#7928CA"]]}
-                    onComplete={() => [true, 1000]}
-                  >
-                    {renderTime}
-                  </CountdownCircleTimer>
-                </Text>
-              )}
-            </Center>
-            {/* {showTimer && (
+                        <Text color={"gray.500"} mt='5'>
+                            Upload a video of the dance that you are trying to
+                            learn. For example, this could be a video of your
+                            teacher, or simply any dance video online. Please
+                            make sure you only upload the clip you are trying to
+                            practice.
+                        </Text>
+                    </Box>
+                </Box>
+            </Flex>
+        </>
+    );
+
+    const content2 = (
+        <>
+            <Flex py={4} height='70vh' width='full'>
+                <Box
+                    direction='row'
+                    display='flex'
+                    width='100%'
+                    justifyContent='center'>
+                    <Box
+                        width='full'
+                        height='full'
+                        display='flex'
+                        flexDirection='column'
+                        justifyContent='center'
+                        alignItems='center'
+                        textAlign='center'>
+                        <Box
+                            width='auto'
+                            height='100%'
+                            maxHeight='100%'
+                            maxWidth='50%'
+                            display='flex'
+                            justifyContent='center'
+                            alignItems='center'
+                            textAlign='center'>
+                            <MediaPipe
+                                gridRef={gridRef}
+                                setLoaded={setMediaPipeLoaded}
+                                webcamRef={recordWebcam.webcamRef}
+                                expectedAnnotations={coachAnnotations}
+                                expectedDuration={coachVideoLength}
+                                setAccuracy={setAccuracy}
+                            />
+                        </Box>
+                        <Center width='100%' mt='-10'>
+                            {!showTimer && (
+                                <Button
+                                    leftIcon={
+                                        buttonColor !== "red" ? <FaVideo /> : ""
+                                    }
+                                    disabled={
+                                        buttonColor === "red" ||
+                                        !mediaPipeLoaded
+                                    }
+                                    colorScheme={buttonColor}
+                                    variant='solid'
+                                    size='lg'
+                                    onClick={startRecording}
+                                    isLoading={loading || !mediaPipeLoaded}
+                                    loadingText={
+                                        !mediaPipeLoaded
+                                            ? "Loading"
+                                            : "Processing"
+                                    }
+                                    // spinner={<BeatLoader size={8} color="white" />}
+                                >
+                                    {buttonText}
+                                </Button>
+                            )}
+                            {showTimer && (
+                                <Text
+                                    className='timer-wrapper'
+                                    style={{ fontFamily: "Roboto" }}>
+                                    <CountdownCircleTimer
+                                        style={{ fontFamily: "Roboto" }}
+                                        isPlaying
+                                        duration={Math.round(coachVideoLength)}
+                                        colors={[
+                                            ["#004777", 0.33],
+                                            ["#FF0080", 0.33],
+                                            ["#7928CA"],
+                                        ]}
+                                        onComplete={() => [true, 1000]}>
+                                        {renderTime}
+                                    </CountdownCircleTimer>
+                                </Text>
+                            )}
+                        </Center>
+                        {/* {showTimer && (
           <Center>
             <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
               Current Accuracy:
@@ -462,33 +474,42 @@ export default function Demo() {
             </Heading>
           </Center>
         )} */}
-          </Box>
+                    </Box>
 
-          <Flex ml="20" display="flex" direction="column" alignItems="center">
-            <Center width="100%">
-              <Text color={"gray.500"} mt="2" mb="3" textAlign="center">
-                Record yourself practicing the dance! Tango will provide you
-                with live feedback based on the video you uploaded earlier.
-              </Text>
-              {/* {curLandmarks.map((val, i) => <p key={i}>{val['x']} {val['y']} {val['z']} {val['visibility']}</p>)} */}
-            </Center>
-            {(coachVideoFile || coachFileId) && (
-              <video
-                style={{
-                  transform: "rotateY(180deg)",
-                  "-webkit-transform": "rotateY(180deg)",
-                  "-moz-transform": "rotateY(180deg)",
-                }}
-                id="coachFilePlaying"
-                src={
-                  confirmedSelectedThumbnail !== ""
-                    ? `http://127.0.0.1:8000/getexisting?fileid=${confirmedSelectedThumbnail}`
-                    : `http://127.0.0.1:8000/getvideo?fileid=${coachFileId}`
-                }
-                // controls
-              />
-            )}
-            {/* <Center width="100%" mb={3}>
+                    <Flex
+                        ml='20'
+                        display='flex'
+                        direction='column'
+                        alignItems='center'>
+                        <Center width='100%'>
+                            <Text
+                                color={"gray.500"}
+                                mt='2'
+                                mb='3'
+                                textAlign='center'>
+                                Record yourself practicing the dance! Tango will
+                                provide you with live feedback based on the
+                                video you uploaded earlier.
+                            </Text>
+                            {/* {curLandmarks.map((val, i) => <p key={i}>{val['x']} {val['y']} {val['z']} {val['visibility']}</p>)} */}
+                        </Center>
+                        {(coachVideoFile || coachFileId) && (
+                            <video
+                                style={{
+                                    transform: "rotateY(180deg)",
+                                    "-webkit-transform": "rotateY(180deg)",
+                                    "-moz-transform": "rotateY(180deg)",
+                                }}
+                                id='coachFilePlaying'
+                                src={
+                                    confirmedSelectedThumbnail !== ""
+                                        ? `http://127.0.0.1:8000/getexisting?fileid=${confirmedSelectedThumbnail}`
+                                        : `http://127.0.0.1:8000/getvideo?fileid=${coachFileId}`
+                                }
+                                // controls
+                            />
+                        )}
+                        {/* <Center width="100%" mb={3}>
         {!showTimer && (
           <Button
             leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
@@ -521,87 +542,90 @@ export default function Demo() {
         )}
       </Center> */}
 
-            <Box width="100%" height="100%">
-              <LandmarkGrid gridRef={gridRef} />
-            </Box>
-          </Flex>
-        </Box>
-      </Flex>
-      <Modal size={"xl"} isOpen={usernameModal}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Enter Username</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Input
-              placeholder="Username"
-              onChange={(e) => {
-                setUsername(e.target.value);
-              }}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              mr="5"
-              colorScheme="blue"
-              disabled={username === ""}
-              onClick={() => {
-                setUsernameModal(false);
-                uploadRecording();
-              }}
-            >
-              Confirm
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  );
+                        <Box width='100%' height='100%'>
+                            <LandmarkGrid gridRef={gridRef} />
+                        </Box>
+                    </Flex>
+                </Box>
+            </Flex>
+            <Modal size={"xl"} isOpen={usernameModal}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Enter Username</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Input
+                            placeholder='Username'
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                            }}
+                        />
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            mr='5'
+                            colorScheme='blue'
+                            disabled={username === ""}
+                            onClick={() => {
+                                setUsernameModal(false);
+                                uploadRecording();
+                            }}>
+                            Confirm
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </>
+    );
 
-  const lineChartData = [
-    { name: "Page A", uv: 400, pv: 2400, amt: 2400 },
-    { name: "Page B", uv: 300, pv: 2400, amt: 2400 },
-    { name: "Page C", uv: 250, pv: 2400, amt: 2400 },
-    { name: "Page D", uv: 200, pv: 2400, amt: 2400 },
-  ];
+    const lineChartData = [
+        { name: "Page A", uv: 400, pv: 2400, amt: 2400 },
+        { name: "Page B", uv: 300, pv: 2400, amt: 2400 },
+        { name: "Page C", uv: 250, pv: 2400, amt: 2400 },
+        { name: "Page D", uv: 200, pv: 2400, amt: 2400 },
+    ];
 
-  const content3 = (
-    <>
-      <Center py={2} mt="5">
-        <Box
-          w={"full"}
-          bg={useColorModeValue("white", "gray.900")}
-          boxShadow={"2xl"}
-          rounded={"lg"}
-          p={6}
-          textAlign={"center"}
-          justifyContent={"center"}
-        >
-          <Box display="flex" direction="row" justifyContent="center">
-            <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
-              Total Accuracy:
-            </Heading>
-            <Heading fontSize={"2xl"} fontFamily={"body"} color="green">
-              {(Math.round(10 * finalResults["overall_score"]) / 10).toFixed(1)}
-              %
-            </Heading>
-          </Box>
+    const content3 = (
+        <>
+            <Center py={2} mt='5'>
+                <Box
+                    w={"full"}
+                    bg={useColorModeValue("white", "gray.900")}
+                    boxShadow={"2xl"}
+                    rounded={"lg"}
+                    p={6}
+                    textAlign={"center"}
+                    justifyContent={"center"}>
+                    <Box display='flex' direction='row' justifyContent='center'>
+                        <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
+                            Total Accuracy:
+                        </Heading>
+                        <Heading
+                            fontSize={"2xl"}
+                            fontFamily={"body"}
+                            color='green'>
+                            {(
+                                Math.round(10 * finalResults["overall_score"]) /
+                                10
+                            ).toFixed(1)}
+                            %
+                        </Heading>
+                    </Box>
 
-          <Text
-            textAlign={"center"}
-            color={"blue.600"}
-            fontWeight="medium"
-            px={3}
-            mt="2"
-          >
-            {/* Running Feedback for Dance goes here: Open your elbows more! */}
-          </Text>
-          <Text color={"gray.500"} mt="2" textAlign="center">
-            Thank you for trying out Tango! Check out our final accuracy
-            analysis of your dance.
-          </Text>
+                    <Text
+                        textAlign={"center"}
+                        color={"blue.600"}
+                        fontWeight='medium'
+                        px={3}
+                        mt='2'>
+                        {/* Running Feedback for Dance goes here: Open your elbows more! */}
+                    </Text>
+                    <Text color={"gray.500"} mt='2' textAlign='center'>
+                        Thank you for trying out Tango! Check out our final
+                        accuracy analysis of your dance.
+                    </Text>
 
-          {/* <Button
+                    {/* <Button
             leftIcon={<AiOutlineCheckCircle />}
             color="white"
             bgColor="teal.500"
@@ -611,68 +635,85 @@ export default function Demo() {
             >
               Reset
           </Button> */}
-        </Box>
-      </Center>
+                </Box>
+            </Center>
 
-      <Box
-        width="full"
-        // maxHeight="100%"
-        direction="row"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-      >
-        <Box width="50%" display="flex" direction="row" justifyContent="center">
-          <video
-            ref={finalVideoRef}
-            controls
-            src={`http://127.0.0.1:8000/getvideo?fileid=${finalResults["fileid"]}`}
-          />
-        </Box>
+            <Box
+                width='full'
+                // maxHeight="100%"
+                direction='row'
+                display='flex'
+                justifyContent='center'
+                alignItems='center'
+                textAlign='center'>
+                <Box
+                    width='50%'
+                    display='flex'
+                    direction='row'
+                    justifyContent='center'>
+                    <video
+                        ref={finalVideoRef}
+                        controls
+                        src={`http://127.0.0.1:8000/getvideo?fileid=${finalResults["fileid"]}`}
+                    />
+                </Box>
 
-        <Box width="50%" mt="5">
-          <Text
-            textAlign={"center"}
-            color={"teal.500"}
-            fontWeight="medium"
-            fontSize="larger"
-          >
-            Accuracy over time
-          </Text>
-          <AreaChart
-            width={600}
-            height={350}
-            data={
-              finalResults &&
-              finalResults["frames"] &&
-              finalResults["frames"].map((x, i, arr) => {
-                function label(ind) {
-                  return coachVideoLength * (ind / arr.length);
-                }
+                <Box width='50%' mt='5'>
+                    <Text
+                        textAlign={"center"}
+                        color={"teal.500"}
+                        fontWeight='medium'
+                        fontSize='larger'>
+                        Accuracy over time
+                    </Text>
+                    <AreaChart
+                        width={600}
+                        height={350}
+                        data={
+                            finalResults &&
+                            finalResults["frames"] &&
+                            finalResults["frames"].map((x, i, arr) => {
+                                function label(ind) {
+                                    return (
+                                        coachVideoLength * (ind / arr.length)
+                                    );
+                                }
 
-                return {
-                  name:
-                    i === 0 || Math.floor(label(i)) !== Math.floor(label(i - 1))
-                      ? Math.round(label(i))
-                      : -1,
-                  uv: x,
-                };
-              })
-            }
-            margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-          >
-            <Area type="monotone" dataKey="uv" stroke="#8884d8" />
-            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-            {coachVideoLength > 0 && (
-              <XAxis
-                dataKey="name"
-                label={{ value: "seconds", position: "bottom", offset: -7 }}
-                ticks={[...Array(Math.ceil(coachVideoLength)).keys()]}
-              />
-            )}
-            <YAxis domain={[0, 100]} />
-            {finalVideoRef.current && finalResults["frames"] && (
+                                return {
+                                    name:
+                                        i === 0 ||
+                                        Math.floor(label(i)) !==
+                                            Math.floor(label(i - 1))
+                                            ? Math.round(label(i))
+                                            : -1,
+                                    overall: x,
+                                };
+                            })
+                        }
+                        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <Area
+                            type='monotone'
+                            dataKey='overall'
+                            stroke='#8884d8'
+                        />
+                        <CartesianGrid stroke='#ccc' strokeDasharray='5 5' />
+                        {coachVideoLength > 0 && (
+                            <XAxis
+                                dataKey='name'
+                                label={{
+                                    value: "seconds",
+                                    position: "bottom",
+                                    offset: -7,
+                                }}
+                                ticks={[
+                                    ...Array(
+                                        Math.ceil(coachVideoLength)
+                                    ).keys(),
+                                ]}
+                            />
+                        )}
+                        <YAxis domain={[0, 100]} />
+                        {/* {finalVideoRef.current && finalResults["frames"] && (
               <ReferenceDot
                 x={Math.round(
                   (finalVideoRef.current.currentTime /
@@ -684,73 +725,441 @@ export default function Demo() {
                 fill="red"
                 stroke="none"
               />
-            )}
-            <chartTooltip />
-          </AreaChart>
-        </Box>
-      </Box>
-      <Button
-        mt={6}
-        colorScheme="teal"
-        size="sm"
-        onClick={() => window.location.reload()}
-      >
-        Restart
-      </Button>
-    </>
-  );
+            )} */}
+                        <chartTooltip />
+                    </AreaChart>
+                </Box>
+            </Box>
 
-  const steps = [
-    {
-      label: "Upload Dance Video",
-      content: uploaddancevideo,
-      requiresCompletion: false,
-    },
-    {
-      label: "Record Your Dance",
-      content: content2,
-      requiresCompletion: false,
-    },
-    { label: "View Results!", content: content3, requiresCompletion: false },
-  ];
+            <Box width='full' pt={4}>
+                <SimpleGrid columns={2} spacing={10}>
+                    <Box>
+                        <SimpleGrid columns={4} spacing={10}>
+                            <Box textAlign='center'>
+                                <Text fontSize='22' fontWeight='bold'>
+                                    Left Hand
+                                </Text>
+                                <PieChart
+                                    data={[
+                                        {
+                                            value: (
+                                                Math.round(
+                                                    10 *
+                                                        finalResults[
+                                                            "left_hand_overall"
+                                                        ]
+                                                ) / 10
+                                            ).toFixed(1),
+                                            color: "#3182CE",
+                                        },
+                                        {
+                                            value:
+                                                100 -
+                                                (
+                                                    Math.round(
+                                                        10 *
+                                                            finalResults[
+                                                                "left_hand_overall"
+                                                            ]
+                                                    ) / 10
+                                                ).toFixed(1),
+                                            color: "#efefef",
+                                        },
+                                    ]}
+                                    totalValue={100}
+                                    lineWidth={20}
+                                    label={({ dataEntry, index }) =>
+                                        dataEntry.value ===
+                                        (
+                                            Math.round(
+                                                10 *
+                                                    finalResults[
+                                                        "left_hand_overall"
+                                                    ]
+                                            ) / 10
+                                        ).toFixed(1)
+                                            ? dataEntry.value + "%"
+                                            : ""
+                                    }
+                                    labelStyle={{
+                                        fontSize: "25px",
+                                        fontFamily: "sans-serif",
+                                        fill: "#3182CE",
+                                    }}
+                                    labelPosition={0}
+                                />
+                            </Box>
+                            <Box textAlign='center'>
+                                <Text fontSize='22' fontWeight='bold'>
+                                    Right Hand
+                                </Text>
+                                <PieChart
+                                    data={[
+                                        {
+                                            value: (
+                                                Math.round(
+                                                    10 *
+                                                        finalResults[
+                                                            "right_hand_overall"
+                                                        ]
+                                                ) / 10
+                                            ).toFixed(1),
+                                            color: "#38A169",
+                                        },
+                                        {
+                                            value:
+                                                100 -
+                                                (
+                                                    Math.round(
+                                                        10 *
+                                                            finalResults[
+                                                                "right_hand_overall"
+                                                            ]
+                                                    ) / 10
+                                                ).toFixed(1),
+                                            color: "#efefef",
+                                        },
+                                    ]}
+                                    totalValue={100}
+                                    lineWidth={20}
+                                    label={({ dataEntry, index }) =>
+                                        dataEntry.value ===
+                                        (
+                                            Math.round(
+                                                10 *
+                                                    finalResults[
+                                                        "right_hand_overall"
+                                                    ]
+                                            ) / 10
+                                        ).toFixed(1)
+                                            ? dataEntry.value + "%"
+                                            : ""
+                                    }
+                                    labelStyle={{
+                                        fontSize: "25px",
+                                        fontFamily: "sans-serif",
+                                        fill: "#38A169",
+                                    }}
+                                    labelPosition={0}
+                                />
+                            </Box>
+                            <Box textAlign='center'>
+                                <Text fontSize='22' fontWeight='bold'>
+                                    Left Leg
+                                </Text>
+                                <PieChart
+                                    data={[
+                                        {
+                                            value: (
+                                                Math.round(
+                                                    10 *
+                                                        finalResults[
+                                                            "left_leg_overall"
+                                                        ]
+                                                ) / 10
+                                            ).toFixed(1),
+                                            color: "#DD6B20",
+                                        },
+                                        {
+                                            value:
+                                                100 -
+                                                (
+                                                    Math.round(
+                                                        10 *
+                                                            finalResults[
+                                                                "left_leg_overall"
+                                                            ]
+                                                    ) / 10
+                                                ).toFixed(1),
+                                            color: "#efefef",
+                                        },
+                                    ]}
+                                    totalValue={100}
+                                    lineWidth={20}
+                                    label={({ dataEntry, index }) =>
+                                        dataEntry.value ===
+                                        (
+                                            Math.round(
+                                                10 *
+                                                    finalResults[
+                                                        "left_leg_overall"
+                                                    ]
+                                            ) / 10
+                                        ).toFixed(1)
+                                            ? dataEntry.value + "%"
+                                            : ""
+                                    }
+                                    labelStyle={{
+                                        fontSize: "25px",
+                                        fontFamily: "sans-serif",
+                                        fill: "#DD6B20",
+                                    }}
+                                    labelPosition={0}
+                                />
+                            </Box>
+                            <Box textAlign='center'>
+                                <Text fontSize='22' fontWeight='bold'>
+                                    Right Leg
+                                </Text>
+                                <PieChart
+                                    data={[
+                                        {
+                                            value: (
+                                                Math.round(
+                                                    10 *
+                                                        finalResults[
+                                                            "right_leg_overall"
+                                                        ]
+                                                ) / 10
+                                            ).toFixed(1),
+                                            color: "#E53E3E",
+                                        },
+                                        {
+                                            value:
+                                                100 -
+                                                (
+                                                    Math.round(
+                                                        10 *
+                                                            finalResults[
+                                                                "right_leg_overall"
+                                                            ]
+                                                    ) / 10
+                                                ).toFixed(1),
+                                            color: "#efefef",
+                                        },
+                                    ]}
+                                    totalValue={100}
+                                    lineWidth={20}
+                                    label={({ dataEntry, index }) =>
+                                        dataEntry.value ===
+                                        (
+                                            Math.round(
+                                                10 *
+                                                    finalResults[
+                                                        "right_leg_overall"
+                                                    ]
+                                            ) / 10
+                                        ).toFixed(1)
+                                            ? dataEntry.value + "%"
+                                            : ""
+                                    }
+                                    labelStyle={{
+                                        fontSize: "25px",
+                                        fontFamily: "sans-serif",
+                                        fill: "#E53E3E",
+                                    }}
+                                    labelPosition={0}
+                                />
+                            </Box>
+                        </SimpleGrid>
+                        <Box mt='10'>
+                            <LineChart
+                                width={600}
+                                height={350}
+                                data={
+                                    finalResults &&
+                                    finalResults["frames"] &&
+                                    finalResults["frames"]
+                                        .filter((x, i, arr) => i % 10 === 0)
+                                        .map((x, i, arr) => {
+                                            function label(ind) {
+                                                return (
+                                                    coachVideoLength *
+                                                    (ind / arr.length)
+                                                );
+                                            }
 
-  const [stepCompleted, setStepCompleted] = useState(
-    new Array(steps.length).fill(false)
-  );
+                                            const scale = 10;
 
-  return (
-    <>
-      <Navbar />
-      <Center mt="5">
-        <VStack width="80%">
-          <Steps
-            state={loading ? "loading" : ""}
-            colorScheme="teal"
-            activeStep={activeStep}
-          >
-            {steps.map(({ label, content }) => (
-              <Step label={label} key={label}>
-                {content}
-              </Step>
-            ))}
-          </Steps>
-          {activeStep === 2 ? (
-            ""
-          ) : (
-            <>
-              <StepButtons
-                {...{ nextStep, prevStep }}
-                prevDisabled={activeStep === 0}
-                nextDisabled={
-                  steps[activeStep].requiresCompletion &&
-                  !stepCompleted[activeStep]
-                }
-                style={{ display: "none" }}
+                                            return {
+                                                name:
+                                                    i === 0 ||
+                                                    Math.floor(label(i)) !==
+                                                        Math.floor(label(i - 1))
+                                                        ? Math.round(label(i))
+                                                        : -1,
+                                                overall: x,
+                                                leftHand:
+                                                    finalResults["left_hand"][
+                                                        scale * i
+                                                    ],
+                                                rightHand:
+                                                    finalResults["right_hand"][
+                                                        scale * i
+                                                    ],
+                                                leftLeg:
+                                                    finalResults["left_leg"][
+                                                        scale * i
+                                                    ],
+                                                rightLeg:
+                                                    finalResults["right_leg"][
+                                                        scale * i
+                                                    ],
+                                            };
+                                        })
+                                }
+                                margin={{
+                                    top: 5,
+                                    right: 20,
+                                    bottom: 5,
+                                    left: 0,
+                                }}>
+                                {/* <Line type="monotone" dataKey="overall" stroke="#000000" /> */}
+                                <Line
+                                    type='monotone'
+                                    dataKey='leftHand'
+                                    stroke='#3182CE'
+                                />
+                                <Line
+                                    type='monotone'
+                                    dataKey='rightHand'
+                                    stroke='#38A169'
+                                />
+                                <Line
+                                    type='monotone'
+                                    dataKey='leftLeg'
+                                    stroke='#DD6B20'
+                                />
+                                <Line
+                                    type='monotone'
+                                    dataKey='rightLeg'
+                                    stroke='#E53E3E'
+                                />
+                                <CartesianGrid
+                                    stroke='#ccc'
+                                    strokeDasharray='5 5'
+                                />
+                                {/* {coachVideoLength > 0 && (
+              <XAxis
+                dataKey="name"
+                label={{ value: "seconds", position: "bottom", offset: -7 }}
+                ticks={[...Array(Math.ceil(coachVideoLength)).keys()]}
               />
-            </>
-          )}
-        </VStack>
-      </Center>
-    </>
-  );
+            )} */}
+                                <YAxis domain={[0, 100]} />
+                                {/* {finalVideoRef.current && finalResults["frames"] && (
+              <ReferenceDot
+                x={Math.round(
+                  (finalVideoRef.current.currentTime /
+                    finalVideoRef.current.duration) *
+                    finalResults["frames"].length
+                )}
+                y={50}
+                r={5}
+                fill="red"
+                stroke="none"
+              />
+            )} */}
+                                <chartTooltip />
+                            </LineChart>
+                        </Box>
+                    </Box>
+                    {confirmedSelectedThumbnail && (
+                        <Box textAlign='center'>
+                            <Heading
+                                fontSize={"2xl"}
+                                fontFamily={"body"}
+                                mb={2}>
+                                Global Leaderboard
+                            </Heading>
+                            <Table variant='simple'>
+                                <Thead>
+                                    <Tr>
+                                        <Th>Rank</Th>
+                                        <Th>Score</Th>
+                                        <Th>Name</Th>
+                                        {/* <Th isNumeric>multiply by</Th> */}
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    {leaderboardData.data.map((item, index) => (
+                                        <Tr
+                                            bg={
+                                                leaderboardData.rank === item[0]
+                                                    ? "gold"
+                                                    : ""
+                                            }>
+                                            <Td>{item[0]}</Td>
+                                            <Td>{item[3]}%</Td>
+                                            <Td>{item[1]}</Td>
+                                        </Tr>
+                                    ))}
+                                </Tbody>
+                            </Table>
+                        </Box>
+                    )}
+                </SimpleGrid>
+            </Box>
+
+            <br />
+            <Button
+                mt={6}
+                colorScheme='teal'
+                size='sm'
+                onClick={() => window.location.reload()}>
+                Restart
+            </Button>
+            <br />
+            <br />
+            <br />
+            <br />
+        </>
+    );
+
+    const steps = [
+        {
+            label: "Upload Dance Video",
+            content: uploaddancevideo,
+            requiresCompletion: false,
+        },
+        {
+            label: "Record Your Dance",
+            content: content2,
+            requiresCompletion: false,
+        },
+        {
+            label: "View Results!",
+            content: content3,
+            requiresCompletion: false,
+        },
+    ];
+
+    const [stepCompleted, setStepCompleted] = useState(
+        new Array(steps.length).fill(false)
+    );
+
+    return (
+        <>
+            <Navbar />
+            <Center mt='5'>
+                <VStack width='80%'>
+                    <Steps
+                        state={loading ? "loading" : ""}
+                        colorScheme='teal'
+                        activeStep={activeStep}>
+                        {steps.map(({ label, content }) => (
+                            <Step label={label} key={label}>
+                                {content}
+                            </Step>
+                        ))}
+                    </Steps>
+                    {activeStep === 2 ? (
+                        ""
+                    ) : (
+                        <>
+                            <StepButtons
+                                {...{ nextStep, prevStep }}
+                                prevDisabled={activeStep === 0}
+                                nextDisabled={
+                                    steps[activeStep].requiresCompletion &&
+                                    !stepCompleted[activeStep]
+                                }
+                                style={{ display: "none" }}
+                            />
+                        </>
+                    )}
+                </VStack>
+            </Center>
+        </>
+    );
 }
