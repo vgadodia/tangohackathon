@@ -24,7 +24,18 @@ import {
   Tooltip,
   Heading,
   SimpleGrid,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  Input,
 } from "@chakra-ui/react";
+
+import { PieChart } from "react-minimal-pie-chart";
 
 import {
   LineChart,
@@ -52,6 +63,8 @@ import { Step, Steps, useSteps } from "chakra-ui-steps";
 import StepButtons from "./StepButtons.tsx";
 import ResetPrompt from "./ResetPrompt.tsx";
 
+import MediaPipe from "./MediaPipe";
+import LandmarkGrid from "./LandmarkGrid";
 import { BsStar, BsStarFill, BsStarHalf } from "react-icons/bs";
 import { FiShoppingCart } from "react-icons/fi";
 
@@ -80,13 +93,16 @@ export default function Demo() {
 
   const [loading, setLoading] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
-
+  const [mediaPipeLoaded, setMediaPipeLoaded] = useState(true); //TODO: change to false
   const [buttonText, setButtonText] = useState("Start Recording");
   const [buttonColor, setButtonColor] = useState("teal");
   const [selectedThumbnail, setSelectedThumbnail] = useState("");
   const [confirmedSelectedThumbnail, setConfirmedSelectedThumbnail] =
     useState("");
   const [coachPlaying, setCoachPlaying] = useState(false);
+  const [username, setUsername] = useState("");
+  const [usernameModal, setUsernameModal] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState({ data: [] });
 
   const coachVideoFileRef = useRef(null);
   const [coachVideoFile, setCoachVideoFile] = useState(null);
@@ -96,6 +112,7 @@ export default function Demo() {
   const [coachFileId, setCoachFileId] = useState("");
 
   const [coachAnnotations, setCoachAnnotations] = useState([]);
+  const [accuracy, setAccuracy] = useState([]);
   const [finalResults, setFinalResults] = useState({});
 
   const finalVideoRef = useRef(null);
@@ -110,7 +127,9 @@ export default function Demo() {
   };
 
   const uploadCoachVideo = async () => {
+    // event.preventDefault();
     setLoading(true);
+    // upload the video here
 
     if (confirmedSelectedThumbnail !== "") {
       const formData = new FormData();
@@ -160,6 +179,15 @@ export default function Demo() {
 
   const recordWebcam = useRecordWebcam();
 
+  const uploadRecording2 = async () => {
+    setButtonText("Uploading...");
+    setLoading(true);
+    setShowTimer(false);
+    setCoachPlaying(false);
+    setUsernameModal(true);
+    document.getElementById("coachFilePlaying").pause();
+  };
+
   const uploadRecording = async () => {
     setButtonText("Uploading...");
     setLoading(true);
@@ -188,6 +216,44 @@ export default function Demo() {
 
       console.log("uploadfile:", data);
       setFinalResults(data);
+
+      // /update_leaderboard - username, video_name, score
+      let score = (Math.round(10 * data["overall_score"]) / 10).toFixed(1);
+      console.log({
+        username: username,
+        video_name: confirmedSelectedThumbnail,
+        score: score,
+      });
+
+      const formData1 = new FormData();
+      formData1.append("username", username);
+      formData1.append("video_name", confirmedSelectedThumbnail);
+      formData1.append("score", score);
+
+      const response1 = await fetch(
+        "http://127.0.0.1:8000/update_leaderboard",
+        {
+          method: "POST",
+          body: formData1,
+        }
+      );
+
+      console.log("response", response1.text());
+
+      // const formData2 = new FormData();
+      // formData2.append("data", {
+      //   video_name: confirmedSelectedThumbnail,
+      //   score: score,
+      // });
+
+      const response2 = await fetch("http://127.0.0.1:8000/get_leaderboard", {
+        method: "POST",
+        body: formData1,
+      });
+
+      const leaderboardData = JSON.parse(await response2.text());
+      console.log("leaderboarddata", leaderboardData);
+      setLeaderboardData(leaderboardData);
     } else {
       const formData = new FormData();
 
@@ -218,6 +284,11 @@ export default function Demo() {
   }, []);
 
   const startRecording = () => {
+    document
+      .getElementById("coachFilePlaying")
+      .play()
+      .then(() => document.getElementById("coachFilePlaying").pause());
+
     setButtonColor("red");
     setButtonText("3...");
     setTimeout(() => {
@@ -237,7 +308,11 @@ export default function Demo() {
       recordWebcam.start().then(() => {
         setTimeout(() => {
           recordWebcam.stop().then(() => {
-            uploadRecording();
+            if (confirmedSelectedThumbnail) {
+              uploadRecording2();
+            } else {
+              uploadRecording();
+            }
           });
         }, 1000 * coachVideoLength);
       });
@@ -379,8 +454,81 @@ export default function Demo() {
           </Box>
         </Box>
       </Flex>
+      <Modal onClose={onClose} size={"6xl"} isOpen={isOpen}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Select video from our library</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <SimpleGrid columns={4} spacing={10}>
+              {libraryData.map((item, index) => (
+                <Tooltip label="Click to choose this dance" key={index}>
+                  <Box
+                    bg={"white"}
+                    borderWidth={
+                      selectedThumbnail === item.fileName ? "2px" : "1px"
+                    }
+                    borderColor={
+                      selectedThumbnail === item.fileName ? "teal" : ""
+                    }
+                    rounded="lg"
+                    shadow="sm"
+                    position="relative"
+                    _hover={{
+                      bg: "gray.50",
+                      cursor: "pointer",
+                      shadow: "lg",
+                    }}
+                    onClick={() => handleClickThumbnail(item.fileName)}
+                  >
+                    <Image
+                      src={item.imageURL}
+                      alt={`Picture of ${item.name}`}
+                      roundedTop="lg"
+                      height="85%"
+                    />
+
+                    <Box p="6">
+                      <Center>
+                        <Flex
+                          mt="1"
+                          justifyContent="space-between"
+                          alignContent="center"
+                        >
+                          <Box
+                            fontSize="md"
+                            fontWeight="normal"
+                            as="h4"
+                            lineHeight="tight"
+                            isTruncated
+                          >
+                            {item.name}
+                          </Box>
+                        </Flex>
+                      </Center>
+                    </Box>
+                  </Box>
+                </Tooltip>
+              ))}
+            </SimpleGrid>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              mr="5"
+              colorScheme="blue"
+              onClick={() => confirmThumbnail()}
+              disabled={selectedThumbnail === ""}
+            >
+              Confirm
+            </Button>
+            <Button onClick={onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
+
+  const gridRef = useRef(null);
 
   const content2 = (
     <>
@@ -453,15 +601,15 @@ export default function Demo() {
               )}
             </Center>
             {/* {showTimer && (
-          <Center>
-            <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
-              Current Accuracy:
-            </Heading>
-            <Heading fontSize={"2xl"} fontFamily={"body"} color="green">
-              {(Math.round(10 * accuracy) / 10).toFixed(1)}%
-            </Heading>
-          </Center>
-        )} */}
+              <Center>
+                <Heading fontSize={"2xl"} fontFamily={"body"} mr={1}>
+                  Current Accuracy:
+                </Heading>
+                <Heading fontSize={"2xl"} fontFamily={"body"} color="green">
+                  {(Math.round(10 * accuracy) / 10).toFixed(1)}%
+                </Heading>
+              </Center>
+            )} */}
           </Box>
 
           <Flex ml="20" display="flex" direction="column" alignItems="center">
@@ -489,37 +637,37 @@ export default function Demo() {
               />
             )}
             {/* <Center width="100%" mb={3}>
-        {!showTimer && (
-          <Button
-            leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
-            disabled={buttonColor === "red"}
-            colorScheme={buttonColor}
-            variant="solid"
-            size="lg"
-            onClick={startRecording}
-            mt="3"
-            mb="3"
-            isLoading={loading || !mediaPipeLoaded}
-            loadingText={!mediaPipeLoaded ? "Loading" : "Processing"}
-            // spinner={<BeatLoader size={8} color="white" />}
-          >
-            {buttonText}
-          </Button>
-        )}
-        {showTimer && (
-          <Text className="timer-wrapper" style={{ fontFamily: "Roboto" }}>
-            <CountdownCircleTimer
-              style={{ fontFamily: "Roboto" }}
-              isPlaying
-              duration={Math.round(coachVideoLength)}
-              colors={[["#004777", 0.33], ["#FF0080", 0.33], ["#7928CA"]]}
-              onComplete={() => [true, 1000]}
-            >
-              {renderTime}
-            </CountdownCircleTimer>
-          </Text>
-        )}
-      </Center> */}
+            {!showTimer && (
+              <Button
+                leftIcon={buttonColor !== "red" ? <FaVideo /> : ""}
+                disabled={buttonColor === "red"}
+                colorScheme={buttonColor}
+                variant="solid"
+                size="lg"
+                onClick={startRecording}
+                mt="3"
+                mb="3"
+                isLoading={loading || !mediaPipeLoaded}
+                loadingText={!mediaPipeLoaded ? "Loading" : "Processing"}
+                // spinner={<BeatLoader size={8} color="white" />}
+              >
+                {buttonText}
+              </Button>
+            )}
+            {showTimer && (
+              <Text className="timer-wrapper" style={{ fontFamily: "Roboto" }}>
+                <CountdownCircleTimer
+                  style={{ fontFamily: "Roboto" }}
+                  isPlaying
+                  duration={Math.round(coachVideoLength)}
+                  colors={[["#004777", 0.33], ["#FF0080", 0.33], ["#7928CA"]]}
+                  onComplete={() => [true, 1000]}
+                >
+                  {renderTime}
+                </CountdownCircleTimer>
+              </Text>
+            )}
+          </Center> */}
 
             <Box width="100%" height="100%">
               <LandmarkGrid gridRef={gridRef} />
@@ -557,13 +705,6 @@ export default function Demo() {
       </Modal>
     </>
   );
-
-  const lineChartData = [
-    { name: "Page A", uv: 400, pv: 2400, amt: 2400 },
-    { name: "Page B", uv: 300, pv: 2400, amt: 2400 },
-    { name: "Page C", uv: 250, pv: 2400, amt: 2400 },
-    { name: "Page D", uv: 200, pv: 2400, amt: 2400 },
-  ];
 
   const content3 = (
     <>
@@ -667,11 +808,7 @@ export default function Demo() {
             {coachVideoLength > 0 && (
               <XAxis
                 dataKey="name"
-                label={{
-                  value: "seconds",
-                  position: "bottom",
-                  offset: -7,
-                }}
+                label={{ value: "seconds", position: "bottom", offset: -7 }}
                 ticks={[...Array(Math.ceil(coachVideoLength)).keys()]}
               />
             )}
@@ -888,12 +1025,7 @@ export default function Demo() {
                       };
                     })
                 }
-                margin={{
-                  top: 5,
-                  right: 20,
-                  bottom: 5,
-                  left: 0,
-                }}
+                margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
               >
                 {/* <Line type="monotone" dataKey="overall" stroke="#000000" /> */}
                 <Line type="monotone" dataKey="leftHand" stroke="#3182CE" />
@@ -926,7 +1058,6 @@ export default function Demo() {
               </LineChart>
             </Box>
           </Box>
-          {/* Leaderboard */}
           {confirmedSelectedThumbnail && (
             <Box textAlign="center">
               <Heading fontSize={"2xl"} fontFamily={"body"} mb={2}>
@@ -983,11 +1114,7 @@ export default function Demo() {
       content: content2,
       requiresCompletion: false,
     },
-    {
-      label: "View Results!",
-      content: content3,
-      requiresCompletion: false,
-    },
+    { label: "View Results!", content: content3, requiresCompletion: false },
   ];
 
   const [stepCompleted, setStepCompleted] = useState(
